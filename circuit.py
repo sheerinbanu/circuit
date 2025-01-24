@@ -13,153 +13,184 @@ class F1:
             - position de type int représentant  la position du pilote sur le circuit (place ou rang), initialisée à 1 par défaut.
         
         '''
-        self.__moteur = moteur
-        self.__temperature_pneumatique = temperature_pneumatique
-        self.__vitesse = vitesse
-        self.__position = position
-        self.__temperature_moteur = (self.__temperature_pneumatique * 0.09) * (self.__vitesse * 0.11)
+        self._moteur = moteur
+        self._temperature_pneumatique = temperature_pneumatique
+        self._vitesse = vitesse
+        self._position = position
+        self._temperature_moteur = (self._temperature_pneumatique * 0.09) * (self._vitesse * 0.11)
 
     
     @property
-    def get_moteur(self)->str:
-        return self.__moteur
+    def moteur(self)->str:
+        return self._moteur
 
-    @get_moteur.setter
-    def set_moteur(self, value):
-        self.__moteur = value
-
-    @property
-    def get_temperature_moteur(self)->float:
-        return self.__temperature_moteur
-
-    @get_temperature_moteur.setter
-    def set_temperature_moteur(self, value):
-        self.__temperature_moteur = value
+    @moteur.setter
+    def moteur(self, value):
+        self._moteur = value
 
     @property
-    def get_vitesse(self)->float:
-        return self.__vitesse
+    def temperature_moteur(self)->float:
+        return self._temperature_moteur
 
-    @get_vitesse.setter
-    def set_vitesse(self, value):
+    @temperature_moteur.setter
+    def temperature_moteur(self, value):
+        self._temperature_moteur = value
+
+    @property
+    def vitesse(self)->float:
+        return self._vitesse
+
+    @vitesse.setter
+    def vitesse(self, value):
         if value>=0:
-            self.__vitesse = value
+            self._vitesse = value
         else:
             print("La vitesse ne peut pas être négative.")
 
     @property
-    def get_position(self)->int:
-        return self.__position
+    def position(self)->int:
+        return self._position
 
-    @get_position.setter
-    def set_position(self, value):
-        self.__position = value
+    @position.setter
+    def position(self, value):
+        if not isinstance(value, int) or value < 1:
+            raise ValueError("La position doit être un entier positif.")
+        self._position = value
 
     @property
-    def get_temperature_pneumatique(self)->float:
-        return self.__temperature_pneumatique
+    def temperature_pneumatique(self)->float:
+        return self._temperature_pneumatique
 
-    @get_temperature_pneumatique.setter
-    def set_temperature_pneumatique(self, value):
+    @temperature_pneumatique.setter
+    def temperature_pneumatique(self, value):
+        if value < 0:
+            raise ValueError("La température pneumatique ne peut pas être négative.")
         self.temperature_pneumatique = value
+        self._temperature_moteur = (self._temperature_pneumatique * 0.09) * (self._vitesse * 0.11)
+
 
     def moteur_is_dead(self):
         return self.temperature_moteur > 360
 
     def accelerer(self, n:float):
-        self.__vitesse += n
+        self._vitesse += n
 
     def DRS(self):
-        self.accelerer(self.__vitesse*0.15)
+        self.accelerer(self._vitesse*0.15)
 
     def depassement(self, pilote: 'F1'):
-        if  self.__position < pilote.__position:
+        if  self._position < pilote._position:
          
             try:
-                self.__position = pilote.__position 
-                pilote.__position += 1
+                self._position = pilote._position 
+                pilote._position += 1
             except ValueError:
                 print("Erreur de dépassement")
         else:
             print("Vous devriez être derrière le pilote à dépasser!")
 
     def __str__(self)->str:
-        return (f"F1(moteur={self.__moteur}, "
-                f"temperature_pneumatique={self.__temperature_pneumatique}, "
-                f"vitesse={self.__vitesse}, "
-                f"temperature_moteur={self.__temperature_moteur:.2f}, "
-                f"position={self.__position})")
+        return (
+                
+                f"F1(moteur={self._moteur}, "
+                f"temperature_pneumatique={self._temperature_pneumatique}, "
+                f"vitesse={self._vitesse}, "
+                f"temperature_moteur={self._temperature_moteur:.2f}, "
+                f"position={self._position})")
     
 
 class RedBull(F1):
 
-    def __init__(self, position, temperature_moteur, moteur = "500cv", temperature_pneumatique = 110, vitesse = 200)->None:
+    def __init__(self, position, temperature_moteur, moteur = "500cv", temperature_pneumatique = 110, vitesse = 200, nom: str = "RedBull")->None:
         super().__init__(position, temperature_moteur, moteur, temperature_pneumatique, vitesse)
+        self.__nom = nom
 
+    @property
+    def nom(self):
+        return self.__nom
     
     def depasser_mercedes(self):
-        self.__temperature_pneumatique -= self.__temperature_pneumatique * 0.08 
+        self._temperature_pneumatique -= self._temperature_pneumatique * 0.08 
 
     def depasser_ferrari(self):
-        self.__temperature_pneumatique -= self.__temperature_pneumatique * 0.08 
+        self._temperature_pneumatique -= self._temperature_pneumatique * 0.08 
 
 
     def __str__(self)->str:
         return (
-            f" RedBull : Position: {self.__position}\n"
-            f"Température moteur: {self.__temperature_moteur}°C\n"
-            f"Moteur: {self.__moteur}\n"
+            f"Écurie: {self.__nom}\n"
+            f"Position: {self._position}\n"
+            f"Température moteur: {self._temperature_moteur}°C\n"
+            f"Moteur: {self._moteur}\n"
             f"Température pneumatique: {self.temperature_pneumatique}°C\n"
-            f"Vitesse: {self.__vitesse} km/h")
+            f"Vitesse: {self._vitesse} km/h")
 
 class Ferrari(F1):
 
-    def __init__(self, position, temperature_moteur, moteur = "500cv", temperature_pneumatique = 110, vitesse = 200)->None:
+    def __init__(self, position, temperature_moteur, moteur = "500cv", temperature_pneumatique = 110, vitesse = 200, nom: str = "Ferrari")->None:
         super().__init__(position, temperature_moteur, moteur, temperature_pneumatique, vitesse)
+        self.__nom = nom
+
+    @property
+    def nom(self):
+        return self.__nom
 
     def subir_depassement_RedBull(self):
-        self.__temperature_pneumatique += self.__temperature_pneumatique * 0.12
+        self._temperature_pneumatique += self._temperature_pneumatique * 0.12
         baisse_vitesse = random.randint(5,12)
-        self.__vitesse -= baisse_vitesse 
+        self._vitesse -= baisse_vitesse 
 
 
     def __str__(self)->str:
         return (
-            f"Ferrari : Position: {self.__position}\n"
-            f"Température moteur: {self.__temperature_moteur}°C\n"
-            f"Moteur: {self.__moteur}\n"
+            f"Écurie: {self.__nom}\n"
+            f"Position: {self._position}\n"
+            f"Température moteur: {self._temperature_moteur}°C\n"
+            f"Moteur: {self._moteur}\n"
             f"Température pneumatique: {self.temperature_pneumatique}°C\n"
-            f"Vitesse: {self.__vitesse} km/h")
+            f"Vitesse: {self._vitesse} km/h")
     
 
 class Mercedes(F1):
-    def __init__(self, position, temperature_moteur, moteur = "500cv", temperature_pneumatique = 110, vitesse = 200)->None:
+    def __init__(self, position, temperature_moteur, moteur = "500cv", temperature_pneumatique = 110, vitesse = 200, nom: str = "Mercedes")->None:
         super().__init__(position, temperature_moteur, moteur, temperature_pneumatique, vitesse)
+        self.__nom = nom
+
+    @property
+    def nom(self):
+        return self.__nom
 
     def subir_depassement_RedBull(self):
-        self.__temperature_pneumatique += self.__temperature_pneumatique * 0.14 
+        self._temperature_pneumatique += self._temperature_pneumatique * 0.14 
 
     def depasser_autre_ecurie(self):
-             self.__temperature_pneumatique -= self.__temperature_pneumatique * 0.11
+             self._temperature_pneumatique -= self._temperature_pneumatique * 0.11
 
     def __str__(self)->str:
         return (
-            f"Mercedes : Position: {self.__position}\n"
-            f"Température moteur: {self.__temperature_moteur}°C\n"
-            f"Moteur: {self.__moteur}\n"
+            f"Écurie: {self.__nom}\n"
+            f"Position: {self._position}\n"
+            f"Température moteur: {self._temperature_moteur}°C\n"
+            f"Moteur: {self._moteur}\n"
             f"Température pneumatique: {self.temperature_pneumatique}°C\n"
-            f"Vitesse: {self.__vitesse} km/h")
+            f"Vitesse: {self._vitesse} km/h")
 
 
         
 if __name__ == "__main__":
     
-    f1_car1 = F1(1,205.0, 0, 5)
-    f1_car2 = F1(position=2, temperature_moteur=85.0)
-    print(f1_car1)
-    print(f1_car2)
-    print(f1_car1.accelerer(10))    
-    print("\nAprès activation du DRS : ", f1_car1.DRS() )
+    # f1_car1 = F1(1,205.0, 0, 5)
+    # f1_car2 = F1(position=2, temperature_moteur=85.0)
+    # print(f1_car1)
+    # print(f1_car2)
+    # print(f1_car1.accelerer(10))    
+    # print("\nAprès activation du DRS : ", f1_car1.DRS() )
+    redbull = RedBull(position=1, temperature_moteur=90.0)
+    mercedes = Mercedes(position=2, temperature_moteur=85.0)
+    ferrari = Ferrari(position=3, temperature_moteur=80.0)
+    print(redbull)  
+    print(mercedes)  
+    print(ferrari)  
     
   
 
