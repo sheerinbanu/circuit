@@ -70,20 +70,32 @@ class F1:
 
 
     def moteur_is_dead(self):
-        return self.temperature_moteur > 360
+        print("Moteur is dead!!", self.temperature_moteur)
 
     def accelerer(self, n:float):
+        print(f"Température moteur avant accélération : {self.temperature_moteur:.2f}") 
         self._vitesse += n
+        self._temperature_moteur = (self._temperature_pneumatique * 0.09) * (self._vitesse * 0.11)
+        print(f"Vitesse après accélération : {self._vitesse:.2f} et Température moteur : {self._temperature_moteur:.2f}")
+
+        if self.temperature_moteur > 360:
+           self.moteur_is_dead()
 
     def DRS(self):
-        self.accelerer(self._vitesse*0.15)
+        print(f"Température moteur avant DRS : {self.temperature_moteur:.2f}")  
+        vitesse_avant_DRS = self._vitesse  # Sauvegarde la vitesse avant DRS
+        self.accelerer(self._vitesse * 0.15)  # Augmente la vitesse de 15%
+        print(f"Vitesse après accélération DRS : {self._vitesse:.2f} et Température moteur : {self._temperature_moteur:.2f}")
+        print(f"Vitesse avant DRS : {vitesse_avant_DRS:.2f}, Vitesse après DRS : {self._vitesse:.2f}")
+        if self.temperature_moteur > 360:
+           self.moteur_is_dead()
 
     def depassement(self, pilote: 'F1'):
-        if  self._position < pilote._position:
+        if  self.position < pilote.position:
          
             try:
-                self._position = pilote._position 
-                pilote._position += 1
+                self.position = pilote.position 
+                pilote.position += 1
             except ValueError:
                 print("Erreur de dépassement")
         else:
@@ -108,14 +120,25 @@ class RedBull(F1):
     @property
     def nom(self):
         return self.__nom
+  
+
+    def depassement(self, pilote: 'F1'):
+        
+        if self.position < pilote.position:
+            print("Vous devriez être derrière le pilote à dépasser !")
+            return
+
+        # Effectuer le dépassement
+        try:
+            self.position = pilote.position
+            pilote.position += 1
+            self._temperature_pneumatique -= self._temperature_pneumatique * 0.08  # Diminution des températures pneumatique
+            print(f"Dépassement réussi ! {self.nom} est maintenant en position {self.position}")
+        except ValueError as e:
+            print(f"Erreur de dépassement : {e}")
+
+
     
-    def depasser_mercedes(self):
-        self._temperature_pneumatique -= self._temperature_pneumatique * 0.08 
-
-    def depasser_ferrari(self):
-        self._temperature_pneumatique -= self._temperature_pneumatique * 0.08 
-
-
     def __str__(self)->str:
         return (
             f"Écurie: {self.__nom}\n"
@@ -139,6 +162,8 @@ class Ferrari(F1):
         self._temperature_pneumatique += self._temperature_pneumatique * 0.12
         baisse_vitesse = random.randint(5,12)
         self._vitesse -= baisse_vitesse 
+        self._position = self._position + 1
+        print(f"Température pneumatique : {self._temperature_pneumatique}, Vitesse : {self._vitesse}, Position : {self._position}")
 
 
     def __str__(self)->str:
@@ -159,12 +184,17 @@ class Mercedes(F1):
     @property
     def nom(self):
         return self.__nom
+    
 
     def subir_depassement_RedBull(self):
-        self._temperature_pneumatique += self._temperature_pneumatique * 0.14 
+        self._temperature_pneumatique += self._temperature_pneumatique * 0.14
+        self._position = self._position + 1 
+        self._vitesse -= random.uniform(5, 12)
+        print(f"Température pneumatique : {self.temperature_pneumatique}, Vitesse : {round(self.vitesse)}, Position : {self.position}")
 
     def depasser_autre_ecurie(self):
-             self._temperature_pneumatique -= self._temperature_pneumatique * 0.11
+             self.temperature_pneumatique -= self.temperature_pneumatique * 0.11
+             self.position = self.position + 1
 
     def __str__(self)->str:
         return (
@@ -185,12 +215,38 @@ if __name__ == "__main__":
     # print(f1_car2)
     # print(f1_car1.accelerer(10))    
     # print("\nAprès activation du DRS : ", f1_car1.DRS() )
-    redbull = RedBull(position=1, temperature_moteur=90.0)
+    #RedBull est en position 3
+    redbull = RedBull(position=3, temperature_moteur=90.0)
+    #Mercedes est en position 2
     mercedes = Mercedes(position=2, temperature_moteur=85.0)
-    ferrari = Ferrari(position=3, temperature_moteur=80.0)
+    #Ferrari est en position 1
+    ferrari = Ferrari(position=1, temperature_moteur=80.0)
     print(redbull)  
     print(mercedes)  
-    print(ferrari)  
+    print(ferrari) 
+    print("Position actuelle de Redbull :", redbull.position)
+    print("Position actuelle de Mercedes :", mercedes.position) 
+    print("Position actuelle de Ferrari :", ferrari.position)  
+    #Redbull dépasse Mercedes
+    print("Redbull accélère :", redbull.accelerer(10.5))
+    print("Redbull dépasse Mercedes :", redbull.depassement(mercedes))
+    #Mercedes subi un dépassement de Redbull
+    print("Mercedes subi un dépassement de Redbull :", mercedes.subir_depassement_RedBull())
+    #Redbull accélère encore
+    print("Redbull accélère :", redbull.DRS())
+    print("Redbull accélère", redbull.accelerer(50))
+    #Redbull dépasse Ferrari
+    print("La position actuelle de RedBull", redbull.position)
+    print("Redbull a dépassé Ferrari :", redbull.depassement(ferrari))
+    #Ferrari subi un dépassement de Redbull
+    print("Ferrari subi un dépassement de Redbull :", ferrari.subir_depassement_RedBull())
+    print("Ferrari subi un dépassement de Redbull :", ferrari.subir_depassement_RedBull())
+    print("Redbull accélère", redbull.accelerer(50))
+    print("La position actuelle de RedBull", redbull.position)
+    print("RedBull continue à s'accélérer...", redbull.DRS())
+    print("Température moteur: ", redbull.temperature_moteur)
+    #Redbull a gagné la course!!!
+
     
   
 
